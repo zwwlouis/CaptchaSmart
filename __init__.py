@@ -1,9 +1,3 @@
-from CaptchaSmart import Constants
-from CaptchaSmart.DBConnector import CaptchDBConn
-from CaptchaSmart import DataReform
-from CaptchaSmart import TensorNN4Captcha
-from CaptchaSmart import ModelBuilder
-
 # # 参数设定
 # HOST = '10.3.246.37'
 # PORT = 3302

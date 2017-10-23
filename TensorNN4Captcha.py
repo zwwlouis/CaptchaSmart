@@ -2,8 +2,8 @@ import tensorflow as tf
 
 
 # 生成权重矩阵
-def weight_variable(shape, seed):
-    initial = tf.truncated_normal(shape, stddev=0.1, seed=seed)
+def weight_variable(shape,seed, stddev=0.1):
+    initial = tf.truncated_normal(shape, stddev = stddev, seed=seed)
     return tf.Variable(initial)
 
 
@@ -30,9 +30,9 @@ class TensorNN4C:
         self.W1 = weight_variable([self.inputLen, self.hiddNum_1], 10)
         self.b1 = bias_variable([self.hiddNum_1])
 
-        self.y1 = tf.nn.sigmoid(tf.matmul(self.input, self.W1) + self.b1)
+        self.y1 = tf.nn.relu(tf.matmul(self.input, self.W1) + self.b1)
 
-        self.W2 = weight_variable([self.hiddNum_1, self.outputLen], 10)
+        self.W2 = weight_variable([self.hiddNum_1, self.outputLen], 10, 1e-10)
         self.b2 = bias_variable([self.outputLen])
 
         self.label = tf.placeholder('float', [None, 2])
@@ -45,25 +45,34 @@ class TensorNN4C:
         init = tf.global_variables_initializer()
         self.sess = tf.Session()
         self.sess.run(init)
-        # print(self.sess.run(self.W1))
-        # print(self.sess.run(self.b1))
-        # print(self.sess.run(self.W2))
-        # print(self.sess.run(self.b2))
+        print("W1 = " + self.sess.run(self.W1).__str__())
+        print("b1 = " + self.sess.run(self.b1).__str__())
+        print("W2 = " + self.sess.run(self.W2).__str__())
+        print("b1 = " + self.sess.run(self.b2).__str__())
 
-    def train(self, input_data, label_data, test_in, test_lab):
+    def train(self, input_data, input_label, test_in, test_label):
         # 设置学习速率
-        train_step = tf.train.GradientDescentOptimizer(0.0002).minimize(self.loss)
+        train_step = tf.train.GradientDescentOptimizer(0.001).minimize(self.loss)
 
         batch_size = 10
         for i in range(500):
             for j in range(int(len(input_data) / batch_size)):
                 batch_in = input_data[(j * batch_size): ((j + 1) * batch_size)]
-                batch_label = label_data[(j * batch_size): ((j + 1) * batch_size)]
+                batch_label = input_label[(j * batch_size): ((j + 1) * batch_size)]
                 self.sess.run(train_step, feed_dict={self.input: batch_in, self.label: batch_label})
                 nloss = self.sess.run(self.loss, feed_dict={self.input: batch_in, self.label: batch_label})
+                print("i = %d   j = %d"%(i,j))
+                print("W2 = " + self.sess.run(self.W2).__str__())
+                tempb1 = self.sess.run(self.b2)
+                oneInput = input_data[j*batch_size]
+                oneLabel = input_label[j * batch_size]
+                # print("out = " + self.sess.run(self.output, feed_dict={self.input: oneInput}).__str__())
+                # print("2ndIn = " + self.sess.run(tf.matmul(self.y1, self.W2) + self.b2).__str__())
+                if not tempb1[0] == tempb1[0]:
+                    return
             if i % 10 == 0:
-                test_correct_rate = self.sess.run(self.accuracy, feed_dict={self.input: test_in, self.label: test_lab})
-                train_correct_rate = self.sess.run(self.accuracy, feed_dict={self.input: input_data, self.label: label_data})
+                test_correct_rate = self.sess.run(self.accuracy, feed_dict={self.input: test_in, self.label: test_label})
+                train_correct_rate = self.sess.run(self.accuracy, feed_dict={self.input: input_data, self.label: input_label})
                 print(i, "test_CorrectRate: ", test_correct_rate, "train_CorrectRate: ", train_correct_rate)
                 # if correct_rate > 0.85:
                 #     break
@@ -73,7 +82,7 @@ class TensorNN4C:
         batch_size = 3
         for j in range(int(len(test_in) / batch_size)):
             batch_in = test_in[(j * batch_size): ((j + 1) * batch_size)]
-            batch_label = test_lab[(j * batch_size): ((j + 1) * batch_size)]
+            batch_label = test_label[(j * batch_size): ((j + 1) * batch_size)]
             print("\n第%d组数据，每组三个" % (j))
             print(self.sess.run(self.output, feed_dict={self.input: batch_in, self.label: batch_label}))
             print(batch_label)

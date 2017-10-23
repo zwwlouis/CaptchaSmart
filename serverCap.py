@@ -1,12 +1,11 @@
 # python web 服务，用于接收验证操作字符串，返回验证结果
 import os  # Python的标准库中的os模块包含普遍的操作系统功能
 import re  # 引入正则表达式对象
-import urllib  # 用于对URL进行编解码
 from http.server import HTTPServer, BaseHTTPRequestHandler  # 导入HTTP处理相关的模块
-import CaptchaSmart as capSmt
-from CaptchaSmart.ModelBuilder import Builder
-from CaptchaSmart import DataReform
-from urllib import parse, request
+from urllib import request
+
+from ModelBuilder import Builder
+from util import DataReform
 
 
 # 自定义处理程序，用于处理HTTP请求
