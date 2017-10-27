@@ -186,7 +186,7 @@ def data_cut(data, rate):
     :param rate:  测试数据所占百分比
     :return:
     """
-    random.seed(10)
+    random.seed(100)
     testData = []
     # 提取测试集
     for i in range(len(data)):
@@ -198,12 +198,21 @@ def data_cut(data, rate):
         data.remove(testData[i])
     # FIXME
     # 对训练集做打乱操作
-    random.seed(1)
-    random.shuffle(data)
+    # random.seed(1)
+    # random.shuffle(data)
     return testData
 
 
 def toline(data):
+    """
+    op数组整体线性化
+    :param data: 样例[[[0,0],[44,1],[93,2]],
+                      [[0,0],[42,2],[60,2]]]
+                ->   [[0,0,44,1,93,2],
+                      [0,0,42,2,60,2]]
+    :return:
+    """
+
     for i in range(len(data)):
         row = data[i]
         data[i] = d2toline(row)
@@ -211,6 +220,12 @@ def toline(data):
 
 
 def d2toline(data):
+    """
+    op线性化
+    :param data:
+            样例：[[0,0],[44,1],[93,2]] -> [0,0,44,1,93,2]
+    :return:
+    """
     rowline = [];
     for item in data:
         rowline.append(item[0])

@@ -64,10 +64,7 @@ value="Show QR" name=qr>
 
 def start_server(port):
     # 初始化模型
-    build = Builder()
-    build.buildModel()
-    TestHTTPHandler.tnn = build.tnn;
-
+    TestHTTPHandler.tnn = Builder.buildModel()
     # 启动服务器
     http_server = HTTPServer(('', int(port)), TestHTTPHandler)
     http_server.serve_forever()  # 设置一直监听并接收请求
