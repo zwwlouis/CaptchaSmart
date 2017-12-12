@@ -3,11 +3,12 @@ import os
 from tensorflow.python.framework.errors_impl import InvalidArgumentError
 
 from util import DataReform
+from util.DBConnector import CaptchDBConn
 import numpy
 import matplotlib.pyplot as plt
 
 # 生成权重矩阵
-from util.DBConnector import CaptchDBConn
+# from util.DBConnector import CaptchDBConn
 
 
 def weight_variable(name, shape, seed, stddev=0.1):
@@ -45,16 +46,30 @@ class TensorNN4C:
     # accuracy = None
     # sess = None
 
-    def __init__(self, name, hidden_layers=1, hidden_nodes=[300], in_len=20, out_len=2, func=None, dev=None):
+    def get_default_hyper_param(self, hidden_layers):
+        """
+        定义默认的超参数
+        :return:
+        """
+        # 设置激活函数
+        if self.func is None:
+            self.func = ["sigmoid"] * (hidden_layers + 1)
+            self.func[-1] = "softmax"
+        # 设置系数初始的标准差
+        if self.dev is None:
+            self.dev = [0.1] * (hidden_layers + 1)
+            self.dev[-1] = 1e-10
+
+    def __init__(self, modelPath, hidden_layers=1, hidden_nodes=[300], in_len=20, out_len=2, func=None, dev=None):
         """
         初始化网络模型
-        :param name: 用于定义命名空间及存储模型的名字
+        :param modelPath: 用于定义命名空间及存储模型的名字
         :param hidden_layers: 隐层数目
         :param hidden_nodes: 隐层节点数目——存储节点数目的数组，数组长度于隐层数目一致
         :param in_len: 输入数据长度
         :param out_len: 输出数据长度
         """
-        self.name = name
+        self.name = "test"
         self.weight = [None] * (hidden_layers + 1)
         self.bias = [None] * (hidden_layers + 1)
         self.out = [None] * (hidden_layers + 1)
@@ -67,7 +82,7 @@ class TensorNN4C:
         # 设置默认的超参数
         self.get_default_hyper_param(hidden_layers)
         # 计算得到模型存储路径，模型文件存放于根目录的save/name文件夹下
-        self.path_name = "/tensorflow_model_save/captcha_smart/" + name + "/model.ckpt"
+        self.path_name = modelPath + "/model.ckpt"
 
         self.sess = tf.Session()
         self.loss = None
@@ -116,20 +131,6 @@ class TensorNN4C:
             # print("b1 = " + self.sess.run(self.b1).__str__())
             # print("W2 = " + self.sess.run(self.W2).__str__())
             # print("b1 = " + self.sess.run(self.b2).__str__())
-
-    def get_default_hyper_param(self, hidden_layers):
-        """
-        定义默认的超参数
-        :return:
-        """
-        # 设置激活函数
-        if self.func is None:
-            self.func = ["sigmoid"] * (hidden_layers + 1)
-            self.func[-1] = "softmax"
-        # 设置系数初始的标准差
-        if self.dev is None:
-            self.dev = [0.1] * (hidden_layers + 1)
-            self.dev[-1] = 1e-10
 
     def gen_model(self, hidden_layers, hidden_nodes, in_len, out_len):
         """
@@ -249,6 +250,7 @@ class TensorNN4C:
         if not os.path.exists(dir):
             os.makedirs(dir)
         save = tf.train.Saver()
+        tf.add_to_collection("output", self.out[-1])
         save_path = save.save(sess=self.sess, save_path=path)
 
     def load(self, path="save/model.ckpt"):
@@ -341,7 +343,7 @@ class TensorNN4C:
         plt.ylabel('Human indice')
         plt.legend()
         plt.show()
-
+        input()
 
 
 

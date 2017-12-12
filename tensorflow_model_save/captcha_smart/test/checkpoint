@@ -1,0 +1,2 @@
+model_checkpoint_path: "D:/pythonWorkspace/tensorflow_examples/CaptchaSmart/CaptchaSmart\\tensorflow_model_save/captcha_smart\\test/model.ckpt"
+all_model_checkpoint_paths: "D:/pythonWorkspace/tensorflow_examples/CaptchaSmart/CaptchaSmart\\tensorflow_model_save/captcha_smart\\test/model.ckpt"

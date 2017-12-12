@@ -25,7 +25,6 @@ value="Show QR" name=qr>
 </body>   
 </html> '''
 
-
         # 将正则表达式编译成Pattern对象
 
         pattern = re.compile(r'/qr\?s=([^\&]+)\&qr=Show\+QR')
@@ -58,6 +57,7 @@ def main():
     # 主函数
     os.chdir('static')  # 改变工作目录到 static 目录
     start_server(8000)  # 启动服务，监听8000端口
+
 
 if __name__ == "__main__":
     main()
