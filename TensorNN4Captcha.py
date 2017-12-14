@@ -69,7 +69,7 @@ class TensorNN4C:
         :param in_len: 输入数据长度
         :param out_len: 输出数据长度
         """
-        self.name = "test"
+        self.name = "tnn"
         self.weight = [None] * (hidden_layers + 1)
         self.bias = [None] * (hidden_layers + 1)
         self.out = [None] * (hidden_layers + 1)
@@ -131,6 +131,10 @@ class TensorNN4C:
             # print("b1 = " + self.sess.run(self.b1).__str__())
             # print("W2 = " + self.sess.run(self.W2).__str__())
             # print("b1 = " + self.sess.run(self.b2).__str__())
+
+
+
+
 
     def gen_model(self, hidden_layers, hidden_nodes, in_len, out_len):
         """
@@ -251,12 +255,19 @@ class TensorNN4C:
             os.makedirs(dir)
         save = tf.train.Saver()
         tf.add_to_collection("output", self.out[-1])
+        tf.add_to_collection("input", self.input)
+        # 倒数第二层层输出为特征空间
+        tf.add_to_collection("feature",self.out[-2])
+        tf.add_to_collection("accuracy", self.accuracy)
+        tf.add_to_collection("label", self.label)
         save_path = save.save(sess=self.sess, save_path=path)
 
     def load(self, path="save/model.ckpt"):
         try:
             save = tf.train.Saver()
             save.restore(sess=self.sess, save_path=path)
+
+            self.get_variable(self.weight[0], "测试weight0")
             return True
         except (IOError, InvalidArgumentError) as err:
             # print(err)
@@ -343,7 +354,7 @@ class TensorNN4C:
         plt.ylabel('Human indice')
         plt.legend()
         plt.show()
-        input()
+        print(input())
 
 
 

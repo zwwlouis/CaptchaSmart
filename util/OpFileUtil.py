@@ -88,6 +88,47 @@ def readFile(fileName, test_rate=0.2):
                 continue
         null_data_num += 1
 
+def get_hum_data(batch_size):
+    """
+    只获得用户操作数据，不需要label
+    :param batch_size:
+    :return:
+    """
+    global hum_index
+    hum_len = batch_size
+    batch_data = []
+    # 获取普通数据
+    if (hum_len + hum_index) > len(hum_op):
+        # 当需求长度大于剩余数组元素时，先将尾部的部分全部加入
+        batch_data += (hum_op[hum_index:])
+        hum_index = hum_len - len(hum_op) + hum_index
+        # 再通过开头部分补足
+        batch_data += (hum_op[0: hum_index])
+    else:
+        batch_data += (hum_op[hum_index: hum_index + hum_len])
+        hum_index = hum_index + hum_len
+    return batch_data
+
+def get_mach_data(batch_size):
+    """
+    只获得机器操作数据，不需要label
+    :param batch_size:
+    :return:
+    """
+    global mach_index
+    mach_len = batch_size
+    batch_data = []
+    # 获取机器数据
+    if (mach_len + mach_index) > len(mach_op):
+        # 当需求长度大于剩余数组元素时，先将尾部的部分全部加入
+        batch_data += (mach_op[mach_index:])
+        mach_index = mach_len - len(mach_op) + mach_index
+        # 再通过开头部分补足
+        batch_data += (mach_op[0: mach_index])
+    else:
+        batch_data += (mach_op[mach_index: mach_index + mach_len])
+        mach_index = mach_index + mach_len
+    return batch_data
 
 def get_data(batch_size):
     """
@@ -135,6 +176,43 @@ def get_data(batch_size):
         "label": batch_label
     }
 
+
+def get_hum_test_data(bath_size):
+    """
+    只获取用户操作的测试数据
+    :param bath_size:
+    :return:
+    """
+    # 测试数据总是从头开始取
+    hum_len = bath_size
+    bath_data = []
+    if hum_len < len(hum_test):
+        bath_data += hum_test[:hum_len]
+    else:
+        bath_data += hum_test
+    return bath_data
+
+
+def get_mach_test_data(bath_size):
+    """
+    只获取机器操作的测试数据
+    :param bath_size:
+    :return:
+    """
+    # 测试数据总是从头开始取
+    mach_len = bath_size
+    bath_data = []
+    bath_label = []
+    for i in range(mach_len):
+        bath_label.append([1, 0])
+    if mach_len < len(mach_test):
+        bath_data += mach_test[:mach_len]
+    else:
+        bath_data += mach_test
+    return {
+        "data": bath_data,
+        "label": bath_label
+    }
 
 def get_test_data(bath_size):
     """
@@ -196,7 +274,7 @@ def main():
     # 读取完数据后对数据作打乱操作
     shuffle_data()
     model_name = "test"
-    model_path = os.path.join(parentDir, 'tensorflow_model_save/captcha_smart', model_name)
+    model_path = os.path.join(parentDir, 'tensorflow_model_save', model_name)
 
     tnn = TensorNN4C(model_path, hidden_layers=1, hidden_nodes=[200], in_len=20, out_len=2,func=["sigmoid","softmax"])
     tnn.set_train_param(0.01)
@@ -213,12 +291,14 @@ def main():
     advance = tnn.correct_rate(test_data["data"], test_data["label"]) - origin_rate
     print("\n\n训练集正确率提升了 %.2f %%" % (advance*100))
 
-    tnn.result_scatter_plot(test_data["data"], test_data["label"])
+
     # 是否无视结果进行保存
     save_ignore = True
     if advance >= 0 or save_ignore:
         tnn.save(tnn.path_name)
         print("模型保存完毕！")
+    # 最后进行绘图操作
+    tnn.result_scatter_plot(test_data["data"], test_data["label"])
 
 if __name__ == "__main__":
     main()
