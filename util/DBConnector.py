@@ -1,4 +1,4 @@
-import MySQLdb
+# import MySQLdb
 
 
 class CaptchDBConn:
@@ -11,9 +11,10 @@ class CaptchDBConn:
     __charset = 'utf8'
 
     def __init__(self):
-        self.__conn = MySQLdb.Connection(host=self.__host, port=self.__port, user=self.__username,
-                                         passwd=self.__password,
-                                         db=self.__db, charset=self.__charset)
+        # FIXME
+        # self.__conn = MySQLdb.Connection(host=self.__host, port=self.__port, user=self.__username,
+        #                                  passwd=self.__password,
+        #                                  db=self.__db, charset=self.__charset)
         self.__cur = self.__conn.cursor()
 
     def get_op_by_type(self, ctype):

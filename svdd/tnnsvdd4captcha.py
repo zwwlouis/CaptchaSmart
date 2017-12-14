@@ -4,11 +4,13 @@ from tensorflow.python.framework.errors_impl import InvalidArgumentError
 import os
 import numpy as np
 
+
 class tnnsvdd4C:
     tnn_model_path = "tensorflow_model_save/tnn"
     """
     单分类SVM实现
     """
+
     def __init__(self):
         # 获得当前文件路径
         curDir = os.path.dirname(__file__)
@@ -18,7 +20,7 @@ class tnnsvdd4C:
         self.sess = tf.Session();
         try:
             save = tf.train.import_meta_graph(self.model_path + "/model.ckpt.meta")
-            save.restore(sess=self.sess, save_path=self.model_path+"/model.ckpt")
+            save.restore(sess=self.sess, save_path=self.model_path + "/model.ckpt")
             print("tnn模型加载完成")
             self.input = tf.get_collection('input')[0]
             self.output = tf.get_collection('output')[0]
@@ -28,21 +30,24 @@ class tnnsvdd4C:
         except (IOError, InvalidArgumentError) as err:
             print(err)
 
-    def getTnnAccuracy(self,test_data,test_label):
-        rate = self.sess.run(self.tnnaccu,feed_dict={self.input:test_data,self.label:test_label})
-        print("tnn模型正确率为 %.2f %%"%(rate*100))
+    def getTnnAccuracy(self, test_data, test_label):
+        rate = self.sess.run(self.tnnaccu, feed_dict={self.input: test_data, self.label: test_label})
+        print("tnn模型正确率为 %.2f %%" % (rate * 100))
 
-    def svddFit(self, hum_data, nu = 0.1, gamma = 0.1):
+    def svddFit(self, hum_data, nu=0.1, gamma=0.1):
         """
         :param nu: 测试集错误率
         :param gamma: 针对RBF核函数，e指数上的系数
         :return:
         """
-
+        # FIXME
         hum_feature = self.sess.run(self.feature,feed_dict={self.input:hum_data})
-        print("svdd拟合输入的特征空间")
-        print(hum_feature)
-        self.clf = svm.OneClassSVM(nu = nu,kernel="rbf",gamma=0.1)
+        # hum_feature = hum_data
+        # print("svdd拟合输入的特征空间")
+        # print(hum_feature)
+        # self.clf = svm.OneClassSVM(nu=nu, kernel="rbf", gamma=gamma)
+        self.clf = svm.OneClassSVM(nu=nu, kernel="linear")
+        # self.clf = svm.OneClassSVM(nu=nu, kernel="poly",degree = 2)
         self.clf.fit(hum_feature)
 
     def svddPredict(self, data):
@@ -50,20 +55,13 @@ class tnnsvdd4C:
 
     def svddAccuracy(self, data, label, name=""):
         feature = self.sess.run(self.feature,feed_dict={self.input: data})
-        predict = self.clf.predict(data)
-        result = label[:,1] - label[:,0]
+        # feature = data
+        predict = self.clf.predict(feature)
+        label = np.array(label)
+        result = label[:, 1] - label[:, 0]
         equal = (predict == result)
         right_sum = np.sum(equal)
         data_len = len(data)
-        rate = right_sum/data_len
+        rate = right_sum / data_len
         if name != "":
-            print("svdd在 %s 上的预测正确率为 %.2f %%"%(name,rate))
-
-
-
-
-
-
-
-
-
+            print("svdd在 %s 上的预测正确率为 %.2f %%" % (name, rate * 100))

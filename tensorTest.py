@@ -26,8 +26,10 @@ def main():
     tsvdd.getTnnAccuracy(test_data["data"],test_data["label"]);
 
     hum_data = OpFileUtil.get_hum_data(6000);
-    tsvdd.svddFit(hum_data)
+
+    tsvdd.svddFit(hum_data["data"],nu = 0.05,gamma = 0.1)
     print("svdd 拟合完成")
+    tsvdd.svddAccuracy(hum_data["data"], hum_data["label"], "用户训练数据")
     tsvdd.svddAccuracy(test_data["data"],test_data["label"],"测试数据")
     mach_test_data = OpFileUtil.get_mach_data(400)
     tsvdd.svddAccuracy(mach_test_data["data"],mach_test_data["label"],"机器测试数据")

@@ -97,6 +97,10 @@ def get_hum_data(batch_size):
     global hum_index
     hum_len = batch_size
     batch_data = []
+    batch_label = []
+    # 生成label
+    for i in range(hum_len):
+        batch_label.append([0, 1])
     # 获取普通数据
     if (hum_len + hum_index) > len(hum_op):
         # 当需求长度大于剩余数组元素时，先将尾部的部分全部加入
@@ -107,7 +111,10 @@ def get_hum_data(batch_size):
     else:
         batch_data += (hum_op[hum_index: hum_index + hum_len])
         hum_index = hum_index + hum_len
-    return batch_data
+    return {
+        "data": batch_data,
+        "label": batch_label
+    }
 
 def get_mach_data(batch_size):
     """
@@ -118,6 +125,9 @@ def get_mach_data(batch_size):
     global mach_index
     mach_len = batch_size
     batch_data = []
+    batch_label = []
+    for i in range(mach_len):
+        batch_label.append([1, 0])
     # 获取机器数据
     if (mach_len + mach_index) > len(mach_op):
         # 当需求长度大于剩余数组元素时，先将尾部的部分全部加入
@@ -128,7 +138,10 @@ def get_mach_data(batch_size):
     else:
         batch_data += (mach_op[mach_index: mach_index + mach_len])
         mach_index = mach_index + mach_len
-    return batch_data
+    return {
+        "data": batch_data,
+        "label": batch_label
+    }
 
 def get_data(batch_size):
     """
@@ -146,7 +159,7 @@ def get_data(batch_size):
     # 生成label
     for i in range(hum_len):
         batch_label.append([0, 1])
-    for i in range(hum_len):
+    for i in range(mach_len):
         batch_label.append([1, 0])
 
     # 获取普通数据
@@ -273,7 +286,7 @@ def main():
     getMoveOPData(resource2, 1)
     # 读取完数据后对数据作打乱操作
     shuffle_data()
-    model_name = "test"
+    model_name = "tnn"
     model_path = os.path.join(parentDir, 'tensorflow_model_save', model_name)
 
     tnn = TensorNN4C(model_path, hidden_layers=1, hidden_nodes=[200], in_len=20, out_len=2,func=["sigmoid","softmax"])

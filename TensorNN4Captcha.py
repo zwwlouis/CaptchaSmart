@@ -257,7 +257,7 @@ class TensorNN4C:
         tf.add_to_collection("output", self.out[-1])
         tf.add_to_collection("input", self.input)
         # 倒数第二层层输出为特征空间
-        tf.add_to_collection("feature",self.out[-2])
+        tf.add_to_collection("feature", self.out[-2])
         tf.add_to_collection("accuracy", self.accuracy)
         tf.add_to_collection("label", self.label)
         save_path = save.save(sess=self.sess, save_path=path)
