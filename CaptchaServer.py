@@ -9,6 +9,7 @@ from django.http import HttpResponse
 from ModelBuilder import Builder
 from util import DataReform
 import json
+import logging
 
 
 # 自定义处理程序，用于处理HTTP请求
@@ -75,12 +76,11 @@ def start_server(port):
     http_server = HTTPServer(('', int(port)), TestHTTPHandler)
     http_server.serve_forever()  # 设置一直监听并接收请求
 
-
 class CaptchaServer:
-    __tnn = None
     def __init__(self):
         print("11111 init function start")
         self.__tnn = Builder().buildModel()
+        self.logger = logging.getLogger("django_logger")
 
     def opTest(self, request):
         op_str = request.GET.get('op');
@@ -89,18 +89,27 @@ class CaptchaServer:
         if op_str is None:
             result['message'] = "参数错误";
         else:
-            print("1111111   request op = " + op_str);
+            self.logger.info("request op = " + op_str);
             # 数据采样处理
-            op_array = DataReform.json_reform(op_str, 10)
-            # 输入变形为行向量
-            op_line = DataReform.d2toline(op_array)
-            label = self.__tnn.test(op_line)
-            print("111111 captcha test label = ",label)
-            thres = 0.5
-            if (label[0][1] > thres):
-                result['code'] = 0;
-            else:
-                result['message'] = "疑似机器操作!";
+            try:
+                op_array = DataReform.json_reform(op_str, 10)
+                self.logger.info("request op after reform =  " + op_str);
+                # 输入变形为行向量
+                op_line = DataReform.d2toline(op_array)
+                label = self.__tnn.test(op_line)
+                self.logger.info("captcha test label = %s", str(label))
+                thres = 0.5
+                # 存储判断为人的概率
+                result['hum'] = float(label[0][1]);
+                if (label[0][1] > thres):
+                    result['code'] = 0;
+                else:
+                    result['message'] = "疑似机器操作!";
+            except Exception as e:
+                # self.logger.info("参数处理出错")
+                result['message'] = "参数错误";
+                return;
+        self.logger.info("response.result = "+json.dumps(result));
         response = HttpResponse(json.dumps(result).encode(encoding='utf-8'))
         return response;
 
