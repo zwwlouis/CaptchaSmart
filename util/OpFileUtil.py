@@ -286,17 +286,17 @@ def main():
     getMoveOPData(resource2, 1)
     # 读取完数据后对数据作打乱操作
     shuffle_data()
-    model_name = "tnn"
+    model_name = "test_20"
     model_path = os.path.join(parentDir, 'tensorflow_model_save', model_name)
 
-    tnn = TensorNN4C(model_path, hidden_layers=1, hidden_nodes=[200], in_len=20, out_len=2,func=["sigmoid","softmax"])
+    tnn = TensorNN4C(model_path, hidden_layers=1, hidden_nodes=[20], in_len=20, out_len=2,func=["sigmoid","softmax"])
     tnn.set_train_param(0.01)
     test_data = get_test_data(900)
     origin_rate = tnn.correct_rate(test_data["data"], test_data["label"],"初始数据在测试集")
 
 
 
-    for i in range(5000):
+    for i in range(3000):
         train_data = get_data(100)
         tnn.batch_train(train_data["data"], train_data["label"])
         if (i+1) % 100 == 0:
@@ -306,12 +306,15 @@ def main():
 
 
     # 是否无视结果进行保存
-    save_ignore = True
+    save_ignore = False
     if advance >= 0 or save_ignore:
         tnn.save(tnn.path_name)
         print("模型保存完毕！")
     # 最后进行绘图操作
     tnn.result_scatter_plot(test_data["data"], test_data["label"])
+
+    # while(True):
+
 
 if __name__ == "__main__":
     main()

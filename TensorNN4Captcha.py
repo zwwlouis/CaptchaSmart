@@ -354,7 +354,7 @@ class TensorNN4C:
         plt.ylabel('Human indice')
         plt.legend()
         plt.show()
-        print(input())
+        # print(input())
 
 
 
