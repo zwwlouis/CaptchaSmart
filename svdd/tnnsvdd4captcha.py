@@ -6,7 +6,7 @@ import numpy as np
 
 
 class tnnsvdd4C:
-    tnn_model_path = "tensorflow_model_save/tnn"
+    tnn_model_path = "tensorflow_model_save/test_20"
     """
     单分类SVM实现
     """
@@ -45,8 +45,17 @@ class tnnsvdd4C:
         # hum_feature = hum_data
         # print("svdd拟合输入的特征空间")
         # print(hum_feature)
+        """
+          kernel : string, optional (default='rbf')
+         Specifies the kernel type to be used in the algorithm.
+         It must be one of 'linear', 'poly', 'rbf', 'sigmoid', 'precomputed' or
+         a callable.
+         If none is given, 'rbf' will be used. If a callable is given it is
+         used to precompute the kernel matrix.
+        """
         # self.clf = svm.OneClassSVM(nu=nu, kernel="rbf", gamma=gamma)
-        self.clf = svm.OneClassSVM(nu=nu, kernel="linear")
+        self.clf = svm.OneClassSVM(nu=nu, kernel="sigmoid")
+        # self.clf = svm.OneClassSVM(nu=nu, kernel="linear")
         # self.clf = svm.OneClassSVM(nu=nu, kernel="poly",degree = 2)
         self.clf.fit(hum_feature)
 

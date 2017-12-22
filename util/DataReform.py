@@ -59,10 +59,6 @@ def reform(data, sampleNum, evt_filter=(Constants.MOUSE_MOVE_EVENT, Constants.MO
     """
     # 数据分割
     opList = data.split('-')
-    # 计算该操作数列经历的总时间
-    starttime = int(opList[0].split(',')[-1])
-    endtime = int(opList[-1].split(',')[-1])
-    totaltime = endtime - starttime
     opListInt = []
     for i in range(len(opList)):
         # 0-x 1-y 2-type 3-time
@@ -77,7 +73,7 @@ def reform(data, sampleNum, evt_filter=(Constants.MOUSE_MOVE_EVENT, Constants.MO
     for i in range(len(opListInt)):
         # 消除初始位置的影响
         if i > 0:
-            opListInt[i][0] = opListInt[i][0]-opListInt[0][0]
+            opListInt[i][0] = opListInt[i][0] - opListInt[0][0]
             opListInt[i][1] = opListInt[i][0] - opListInt[0][1]
     # 初始位置设为0
     opListInt[0][0] = 0
@@ -86,6 +82,7 @@ def reform(data, sampleNum, evt_filter=(Constants.MOUSE_MOVE_EVENT, Constants.MO
         return []
     else:
         return sampling(opListInt, sampleNum)
+
 
 def json_reform(data, sampleNum, evt_filter=(Constants.MOUSE_MOVE_EVENT, Constants.MOUSE_DOWN_EVENT)):
     """
@@ -97,6 +94,9 @@ def json_reform(data, sampleNum, evt_filter=(Constants.MOUSE_MOVE_EVENT, Constan
     """
     # JSON转换为数组对象
     opList = json.loads(data)
+    # 如果参数不符合要求（为一个数组），或操作长度过短则直接返回空数组
+    if (not isinstance(opList, list)) or len(opList) < 2:
+        return [];
     # 计算该操作数列经历的总时间
     starttime = opList[0][-1]
     endtime = opList[-1][-1]
@@ -111,17 +111,18 @@ def json_reform(data, sampleNum, evt_filter=(Constants.MOUSE_MOVE_EVENT, Constan
                 int(opList[i][1]),
                 int(opList[i][3])
             ])
-    for i in range(1,len(opListInt)):
+    for i in range(1, len(opListInt)):
         # 消除初始位置的影响
-            opListInt[i][0] = opListInt[i][0]-opListInt[0][0]
-            opListInt[i][1] = opListInt[i][1]-opListInt[0][1]
+        opListInt[i][0] = opListInt[i][0] - opListInt[0][0]
+        opListInt[i][1] = opListInt[i][1] - opListInt[0][1]
     # 初始位置设为0
     opListInt[0][0] = 0
     opListInt[0][1] = 0
-    if len(opListInt) < 2:
+    if len(opListInt) < 3:
         return []
     else:
         return sampling(opListInt, sampleNum)
+
 
 def sampling(data, sampleNum):
     """
@@ -234,14 +235,9 @@ def d2toline(data):
 
 
 def main():
-    # 主函数
-    random.seed(54)
-    sum = 0
-    for i in range(100000):
-        num = random.uniform(0, 10)
-        print(num)
-        sum += num
-    print('average = %s' % (sum / 100000))
+    op_str = "[[422,676,1,0],[606,676,6,675],[606,676,5,675]]"
+    op_array = json_reform(op_str, 10)
+    print(op_array)
 
 
 if __name__ == "__main__":

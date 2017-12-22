@@ -257,10 +257,10 @@ def main():
     parentDir = os.path.dirname(curDir);
     # 获取机器数据
     resource1 = os.path.join("%s%s" % (parentDir, "/resource/3"))
-    OpFileUtil.getMoveOPData(resource1)
+    OpFileUtil.readPathForMoveOP(resource1)
     # 获取普通数据
     resource2 = os.path.join("%s%s" % (parentDir, "/resource/2"))
-    OpFileUtil.getMoveOPData(resource2, 1)
+    OpFileUtil.readPathForMoveOP(resource2, 1)
     # 读取完数据后对数据作打乱操作
     OpFileUtil.shuffle_data()
 

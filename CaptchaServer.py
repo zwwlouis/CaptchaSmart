@@ -93,14 +93,14 @@ class CaptchaServer:
             # 数据采样处理
             try:
                 op_array = DataReform.json_reform(op_str, 10)
-                self.logger.info("request op after reform =  " + op_str);
+                self.logger.info("request op after reform =  " + str(op_array));
                 # 输入变形为行向量
                 op_line = DataReform.d2toline(op_array)
                 label = self.__tnn.test(op_line)
                 self.logger.info("captcha test label = %s", str(label))
                 thres = 0.5
-                # 存储判断为人的概率
-                result['hum'] = float(label[0][1]);
+                # 存储判断为人的概率，保留三位小数
+                result['hum'] = round(float(label[0][1]), 3);
                 if (label[0][1] > thres):
                     result['code'] = 0;
                 else:
@@ -128,6 +128,8 @@ def main():
     # tnn = capSmt.main()
     # label = tnn.test([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20])
     # print(label)
+
+
 
 
 if __name__ == "__main__":

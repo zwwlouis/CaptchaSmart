@@ -11,10 +11,10 @@ def main():
     parentDir = curDir
     # 获取机器数据
     resource1 = os.path.join("%s%s" % (parentDir, "/resource/3"))
-    OpFileUtil.getMoveOPData(resource1)
+    OpFileUtil.readPathForMoveOP(resource1)
     # 获取普通数据
     resource2 = os.path.join("%s%s" % (parentDir, "/resource/2"))
-    OpFileUtil.getMoveOPData(resource2, 1)
+    OpFileUtil.readPathForMoveOP(resource2, 1)
     # 读取完数据后对数据作打乱操作
     OpFileUtil.shuffle_data()
     model_name = "test"
@@ -27,7 +27,7 @@ def main():
 
     hum_data = OpFileUtil.get_hum_data(6000);
 
-    tsvdd.svddFit(hum_data["data"],nu = 0.05,gamma = 0.1)
+    tsvdd.svddFit(hum_data["data"],nu = 0.05,gamma = 0.01)
     print("svdd 拟合完成")
     tsvdd.svddAccuracy(hum_data["data"], hum_data["label"], "用户训练数据")
     tsvdd.svddAccuracy(test_data["data"],test_data["label"],"测试数据")

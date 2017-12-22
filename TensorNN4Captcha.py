@@ -2,10 +2,12 @@ import tensorflow as tf
 import os
 from tensorflow.python.framework.errors_impl import InvalidArgumentError
 
-from util import DataReform
+from util import DataReform, DataPlot
 from util.DBConnector import CaptchDBConn
-import numpy
+import numpy as np
+from numpy import *
 import matplotlib.pyplot as plt
+
 
 # 生成权重矩阵
 # from util.DBConnector import CaptchDBConn
@@ -132,10 +134,6 @@ class TensorNN4C:
             # print("W2 = " + self.sess.run(self.W2).__str__())
             # print("b1 = " + self.sess.run(self.b2).__str__())
 
-
-
-
-
     def gen_model(self, hidden_layers, hidden_nodes, in_len, out_len):
         """
         生成模型
@@ -166,12 +164,12 @@ class TensorNN4C:
                         self.bias[i] = get_bias_variable("bias_%d" % i, [hidden_nodes[i]])
                         self.out[i] = self.active_func(tf.matmul(self.out[i - 1], self.weight[i]) + self.bias[i],
                                                        self.func[i])
+
     def set_train_param(self, learn_rate):
         # 设置学习速率
         self.train_step = tf.train.GradientDescentOptimizer(learn_rate).minimize(self.loss)
 
-
-    def train(self, data_source, test_in, test_label, batch_size = 100, loop_num = 1000):
+    def train(self, data_source, test_in, test_label, batch_size=100, loop_num=1000):
         """
         进行训练
         :param data_source: 训练数据源，需要包含函数 get_data(batch_size)
@@ -193,7 +191,7 @@ class TensorNN4C:
                 # oneLabel = input_label[j * batch_size]
                 # print("out = " + self.sess.run(self.out[-1], feed_dict={self.input: oneInput}).__str__())
                 # print("2ndout = " + self.sess.run(self.out[-2], feed_dict={self.input: oneInput}).__str__())
-                self.correct_rate(test_in, test_label, "i = %d 测试集"%i)
+                self.correct_rate(test_in, test_label, "i = %d 测试集" % i)
 
                 # if correct_rate > 0.85:
                 #     break
@@ -228,7 +226,6 @@ class TensorNN4C:
         self.sess.run(self.train_step, feed_dict={self.input: input_data, self.label: input_label})
         # nloss = self.sess.run(self.loss, feed_dict={self.input: input_data, self.label: input_label})
 
-
     def active_func(self, tensor, func_name):
         """
         根据所需的激活函数类型返回tensor对象
@@ -244,8 +241,13 @@ class TensorNN4C:
             return tf.nn.softmax(tensor)
 
     def test(self, test_in):
-        text_mat = [test_in]
-        test_label = self.sess.run(self.out[-1], feed_dict={self.input: text_mat})
+        # FIXME 如果输入测试数据长度为0，则认为操作参数有问题判定为机器操作
+        if test_in == []:
+            return [[1, 0]]
+        test_in_array = array(test_in)
+        if len(test_in_array.shape) < 2:
+            test_in_array = array([test_in_array])
+        test_label = self.sess.run(self.out[-1], feed_dict={self.input: test_in_array})
         return test_label
 
     def save(self, path="save/model.ckpt"):
@@ -280,11 +282,34 @@ class TensorNN4C:
         :param label:
         :return:
         """
-        rate = self.sess.run(self.accuracy, feed_dict={self.input: data, self.label: label})
+        try:
+            rate = self.sess.run(self.accuracy, feed_dict={self.input: data, self.label: label})
+        except ValueError as e:
+            print(e)
+            rate = 0
         if not name == "":
-            print("%s 上的正确率 ：%.2f %%" % (name, rate*100))
+            print("%s 上的正确率 ：%.2f %%" % (name, rate * 100))
         return rate
 
+    def get_out(self, var, input, name=""):
+        """
+        打印输出
+        :param var:
+        :param input:
+        :param name:
+        :return:
+        """
+        if isinstance(var, tf.Tensor):
+            # 获取矩阵型状
+            shape = var.get_shape()
+            array = self.sess.run(var, feed_dict={self.input: input})
+            # 变量名不为空则进行输出
+            if not name == "":
+                print("变量 %s :" % name)
+                print(array)
+            return array
+        else:
+            return None
 
     def get_variable(self, var, name=""):
         """
@@ -296,13 +321,15 @@ class TensorNN4C:
         if isinstance(var, tf.Variable):
             # 获取矩阵型状
             shape = var.get_shape()
-            if len(shape) > 1 and shape[0] > shape[1]:
-                var = tf.transpose(var)
             array = self.sess.run(var)
             # 变量名不为空则进行输出
             if not name == "":
                 print("变量 %s :" % name)
-                print(array)
+                # 保证打印的变量高度不要过长
+                if len(shape) > 1 and shape[0] > shape[1]:
+                    print(np.transpose(array))
+                else:
+                    print(array)
             return array
         else:
             return None
@@ -318,6 +345,69 @@ class TensorNN4C:
         for b in self.bias:
             self.get_variable(b, b.name)
 
+    def plot_mode(self, input_data):
+        """
+        进入参数逐一画图模式
+        :return:
+        """
+        while (True):
+            print("提示 输入x,y,z   x:输出对象'o'-网络层输出  'w'-权重 "
+                  "exp o,0,0 第0组数据的输入值 o,1,2- 第2组数据下输出层输出值, "
+                  "w,0,0- 输入层到隐层第一个节点的权重值  ----输入q退出")
+            inword = input()
+            inword_array = inword.split(',')
+            if inword_array[0].strip().lower() == 'o':
+                index = int(inword_array[1])
+                if (index >= len(self.out)) or (index < -len(self.out)):
+                    print("参数错误")
+                    continue
+                out = self.out[index]
+                in_index = int(2)
+                in_len = len(input_data)
+                if (in_index >= in_len) or (in_index < -in_len):
+                    print("参数错误")
+                    continue
+                val = self.get_out(out, [input_data[in_index]], 'out_' + str(index))
+                DataPlot.cmImg(val, inword, vmin=0, vmax=1, cmap=plt.get_cmap("Greys"))
+            elif inword_array[0].strip().lower() == 'w':
+                w_index = int(inword_array[1])
+                if (w_index >= len(self.weight)) or (w_index < -len(self.weight)):
+                    print("参数错误")
+                    continue
+                weight = self.get_variable(self.weight[w_index], 'weight_' + str(w_index))
+
+                next_len = weight.shape[1]
+                net_index = int(inword_array[2])
+                if (net_index >= next_len) or (net_index < -next_len):
+                    print("参数错误")
+                    continue
+                weight = weight[:, net_index]
+                weight = np.array([weight])
+                DataPlot.cmImg(weight, inword, cmap=plt.get_cmap("bwr"))
+            elif inword_array[0].strip().lower() == 'q':
+                break
+
+    def plot_feature(self, data, label):
+        """
+        画出输入数据的特征空间
+        :param data:
+        :param label:
+        :return:
+        """
+        data_len = len(data)
+        if data_len > 10:
+            print("数据长度过长")
+            return
+        feature = self.get_out(self.out[-2], data)
+        for i in range(data_len):
+            if label[i][1] == 1:
+                name = "hum"
+            else:
+                name = "mach"
+            show = i == (data_len - 1)
+            DataPlot.cmImgSub(feature[i], name, (data_len, 1, i + 1), cmap=plt.get_cmap("Greys"), vmax=1, vmin=0,
+                              show=show)
+
     def result_scatter_plot(self, test_data, test_label):
         """
         根据测试数据，做出结果散点图
@@ -327,36 +417,34 @@ class TensorNN4C:
         """
         output = self.sess.run(self.out[-1], feed_dict={self.input: test_data, self.label: test_label})
         # 根据输入数据最大值位置
-        label_max = tf.argmax(test_label,1)
+        label_max = tf.argmax(test_label, 1)
         # 确定用户数据的位置
         hum_index = self.sess.run(label_max) == 1
         # 提取用户数据
         hum_out = output[hum_index]
-        hum_right_index = numpy.argmax(hum_out,1) == 1
+        hum_right_index = np.argmax(hum_out, 1) == 1
         hum_jdg_right = hum_out[hum_right_index]
         hum_jdg_wrong = hum_out[~hum_right_index]
         # 提取机器数据
         mach_index = ~hum_index
         mach_out = output[mach_index]
-        mach_right_index = numpy.argmax(mach_out, 1) == 0
+        mach_right_index = np.argmax(mach_out, 1) == 0
         mach_jdg_right = mach_out[mach_right_index]
         mach_jdg_wrong = mach_out[~mach_right_index]
 
         # 作图
         my_fig = plt.figure("human or machine")
         # 画出用户数据点，判断正确-蓝色 错误-紫色
-        plt.scatter(hum_jdg_right[:,0],hum_jdg_right[:,1],marker='.',color="blue",label="hum right")
-        plt.scatter(hum_jdg_wrong[:,0],hum_jdg_wrong[:,1],marker='.',color="blueviolet",label="hum wrong")
+        plt.scatter(hum_jdg_right[:, 0], hum_jdg_right[:, 1], marker='.', color="blue", label="hum right")
+        plt.scatter(hum_jdg_wrong[:, 0], hum_jdg_wrong[:, 1], marker='.', color="blueviolet", label="hum wrong")
 
-        plt.scatter(mach_jdg_right[:, 0], mach_jdg_right[:, 1], marker='.',color="red",label="mach right")
-        plt.scatter(mach_jdg_wrong[:, 0], mach_jdg_wrong[:, 1], marker='.',color="orange",label="mach wrong")
+        plt.scatter(mach_jdg_right[:, 0], mach_jdg_right[:, 1], marker='.', color="red", label="mach right")
+        plt.scatter(mach_jdg_wrong[:, 0], mach_jdg_wrong[:, 1], marker='.', color="orange", label="mach wrong")
         plt.xlabel('Machine indice')
         plt.ylabel('Human indice')
         plt.legend()
         plt.show()
         # print(input())
-
-
 
 
 def main():
@@ -387,8 +475,8 @@ def main():
     # tnn.correct_rate(input, label, "训练集")
 
     tnn.train(input, label, testinput, testlabel)
-    #作图
-    tnn.result_scatter_plot(testinput,testlabel)
+    # 作图
+    tnn.result_scatter_plot(testinput, testlabel)
 
 
 if __name__ == "__main__":

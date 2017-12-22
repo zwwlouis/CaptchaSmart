@@ -6,7 +6,7 @@ class Builder:
     # @staticmethod
     def buildModel(self):
         path = os.getcwd()
-        model_name = "test"
+        model_name = "tnn"
         model_path = os.path.join(path,'CaptchaSmart/tensorflow_model_save',model_name)
         print(os.path.exists(model_path))
         print(os.listdir(model_path))
