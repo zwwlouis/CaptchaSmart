@@ -84,11 +84,11 @@ def reform(data, sampleNum, evt_filter=(Constants.MOUSE_MOVE_EVENT, Constants.MO
         return sampling(opListInt, sampleNum)
 
 
-def json_reform(data, sampleNum, evt_filter=(Constants.MOUSE_MOVE_EVENT, Constants.MOUSE_DOWN_EVENT)):
+def json_reform(data, sample_num, evt_filter=(Constants.MOUSE_MOVE_EVENT, Constants.MOUSE_DOWN_EVENT)):
     """
     对操作数据进行采样变换，输入数据为JSON字符串
     :param data: 鼠标操作数据
-    :param sampleNum: 采样数
+    :param sample_num: 采样数
     :param evt_filter: 获初步取鼠标操作类型，默认只获得鼠标移动事件
     :return:
     """
@@ -121,13 +121,13 @@ def json_reform(data, sampleNum, evt_filter=(Constants.MOUSE_MOVE_EVENT, Constan
     if len(opListInt) < 3:
         return []
     else:
-        return sampling(opListInt, sampleNum)
+        return sampling(opListInt, sample_num)
 
 
-def sampling(data, sampleNum):
+def sampling(data, sample_num):
     """
     :param data: 待采样数组，每一个数据行为[x,y,time],数据长度必须大于等于2
-    :param sampleNum: 采样数
+    :param sample_num: 采样数
     :param isRound: 是否取整
     :return:
     """
@@ -135,7 +135,7 @@ def sampling(data, sampleNum):
     endtime = data[-1][2]
     totaltime = endtime - starttime
     # 计算采样时间间隔
-    dt = totaltime / (sampleNum - 1);
+    dt = totaltime / (sample_num - 1);
 
     # 将位置信息除以总时间，来消除不同长度的数据对采样带来的影响
     dataCoe = 1 / totaltime * 1000;
@@ -145,7 +145,7 @@ def sampling(data, sampleNum):
     sampleOp.append([data[0][0], data[0][1]])
     # 数据指针指向第二个数据
     dataPoint = 1;
-    for i in range(sampleNum - 1):
+    for i in range(sample_num - 1):
         starttime += dt
         while (dataPoint < len(data)) and (starttime > data[dataPoint][2]):
             dataPoint += 1

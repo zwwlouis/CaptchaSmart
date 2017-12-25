@@ -61,16 +61,17 @@ def readPathForMoveOP(filePath, num=0, type="both"):
     print("         测试数据：%d" % len(mach_test))
 
 
-def readFile(fileName, test_rate=0.2):
+def readFile(filename, test_rate=0.2, sample_num = 10):
     """
     读取文件
-    :param fileName:
+    :param filename:
     :param test_rate: 测试集切割的比例
+    :param sample_num
     :return:
     """
     file_op_illegal_num = 0
     file_null_data_num = 0
-    fopen = open(fileName, 'r')
+    fopen = open(filename, 'r')
     file_hum = []
     file_mach = []
     file_hum_test = []
@@ -83,7 +84,7 @@ def readFile(fileName, test_rate=0.2):
         if ('op' in opObj) and (opObj['op'] != 'NULL'):
             if ('label' in opObj) and (opObj['label'] != 'NULL'):
                 try:
-                    op_array = DataReform.json_reform(opObj['op'], 10)
+                    op_array = DataReform.json_reform(opObj['op'], sample_num)
                 except (TypeError, IndexError, ZeroDivisionError) as err:
                     # print(err)
                     continue
@@ -105,7 +106,7 @@ def readFile(fileName, test_rate=0.2):
         file_null_data_num += 1
     hum_inc = len(file_hum) + len(file_hum_test)
     mach_inc = len(file_mach) + len(file_mach_test)
-    print("读取：%s 文件包含用户数据 %d条，机器数据 %d条" % (fileName, hum_inc, mach_inc))
+    print("读取：%s 文件包含用户数据 %d条，机器数据 %d条" % (filename, hum_inc, mach_inc))
     # print("错误数据  %d条" % (file_null_data_num + file_op_illegal_num))
     return {
         "hum_op": file_hum,
@@ -114,6 +115,15 @@ def readFile(fileName, test_rate=0.2):
         "mach_test": file_mach_test,
     }
 
+def writeFile(filename, op_data):
+    fopen = open(filename, 'w')
+    data_len = len(op_data)
+    for i in range(data_len):
+        data_str = json.dumps(op_data[i])
+        if i != 0:
+            fopen.write("\n")
+        fopen.write(data_str)
+    fopen.flush()
 
 def filterPathForHumOp(tnn, filePath, targetPath=None):
     """
