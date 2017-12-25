@@ -115,6 +115,34 @@ def readFile(filename, test_rate=0.2, sample_num = 10):
         "mach_test": file_mach_test,
     }
 
+
+def readPrehandledFile(filename, test_rate=0.2,label="hum"):
+    """
+    读取经过预处理的文件
+    :param filename:
+    :param test_rate:
+    :param label 读取文件数据对应的标签 "hum"-用户数据   "mach"-机器数据
+    :return:
+    """
+    fopen = open(filename, 'r')
+    file_hum = []
+    file_mach = []
+    file_hum_test = []
+    file_mach_test = []
+    for eachline in fopen:
+        # 生成操作对象
+        opObj = json.loads(eachline)
+
+    return {
+        "hum_op": file_hum,
+        "hum_test": file_hum_test,
+        "mach_op": file_mach,
+        "mach_test": file_mach_test,
+    }
+
+
+
+
 def writeFile(filename, op_data):
     fopen = open(filename, 'w')
     data_len = len(op_data)
